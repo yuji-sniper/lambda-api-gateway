@@ -61,6 +61,10 @@ def remind(message, user_id):
     if (not time.isdigit()) or (len(time) != 8):
         return "日付は8桁の数字で入力するだ!"
     
+    # timeの末尾が0かどうかチェック
+    if time[-1] != "0":
+        return "10分単位で入力するだ!"
+    
     # 存在する日付かどうかチェック
     try:
         datetime.strptime(time, '%m%d%H%M')
