@@ -11,7 +11,7 @@ def lambda_handler(event, context):
     res_message = "なんもできんかっただ.."
     modes = [
         {
-            "name": "リマインド",
+            "name": ["リマインド", "りま"],
             "function": remind
         },
     ]
@@ -26,7 +26,7 @@ def lambda_handler(event, context):
     
     # モードに応じた処理を実行
     for m in modes:
-        if m["name"] == mode:
+        if mode in m["name"]:
             res_message = m["function"](message, user_id)
 
     # LINEへのレスポンス作成
@@ -51,23 +51,23 @@ def remind(message, user_id):
         return "なんか形式間違っとるだ!"
     
     task = parts[1].strip()
-    time = parts[2].strip()
+    time_str = parts[2].strip()
     
     # taskが空文字かどうかチェック
     if task == "":
         return "タスク名を入力するだ!"
     
-    # timeが8桁の数字(01011230)かどうかチェック
-    if (not time.isdigit()) or (len(time) != 8):
+    # time_strが8桁の数字(01011230)かどうかチェック
+    if (not time_str.isdigit()) or (len(time_str) != 8):
         return "日付は8桁の数字で入力するだ!"
     
-    # timeの末尾が0かどうかチェック
-    if time[-1] != "0":
+    # time_strの末尾が0かどうかチェック
+    if time_str[-1] != "0":
         return "10分単位で入力するだ!"
     
     # 存在する日付かどうかチェック
     try:
-        datetime.strptime(time, '%m%d%H%M')
+        time = datetime.strptime(time_str, '%m%d%H%M')
     except ValueError:
         return "存在する日付を入力するだ!"
     
@@ -79,7 +79,10 @@ def remind(message, user_id):
         'id': remider_id,
         'user_id': user_id,
         'task': task,
-        'datetime': time
+        'remind_at': time_str
     })
     
-    return f"「{task}」を\n{time}に\nリマインドするだ!"
+    # timeを「月/日 時:分」形式に変換
+    time = time.strftime('%m/%d %H:%M')
+    
+    return f"「{task}」を\n「{time}」に\nリマインドするだ!"
